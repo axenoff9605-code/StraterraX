@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>StraterraX</title>
+<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600&family=Golos+Text:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0b0e1a;--sf:#111827;--sf2:#16203a;--sf3:#1c2a42;--br:#1e2d4a;--br2:#263654;--blue:#3a5bd9;--bluel:#5a7ef5;--bluell:#8aaaf8;--green:#4db87a;--greenl:#6ee9a0;--silver:#c8d4e8;--silverd:#8a9bbf;--text:#dce6f5;--muted:#5a6e94;--danger:#e05568;--success:#4db87a;--warn:#e8a93a}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--text);font-family:'Golos Text',sans-serif;min-height:100vh;overflow-x:hidden}
+.shell{display:flex;min-height:100vh}
+.sidebar{width:230px;flex-shrink:0;background:var(--sf);border-right:1px solid var(--br);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;overflow-y:auto}
+.logo{padding:22px 18px 18px;border-bottom:1px solid var(--br)}
+.logo-row{display:flex;align-items:center;gap:10px;margin-bottom:3px}
+.logo-name{font-family:'Raleway',sans-serif;font-size:17px;font-weight:600;letter-spacing:.5px;color:var(--silver)}
+.logo-name span{background:linear-gradient(135deg,var(--bluel),var(--greenl));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.logo-sub{font-size:10px;color:var(--muted);letter-spacing:.8px;text-transform:uppercase}
+.nav{padding:14px 10px;flex:1}
+.nav-label{font-size:9px;text-transform:uppercase;letter-spacing:1.4px;color:var(--muted);padding:10px 8px 5px}
+.nav-item{display:flex;align-items:center;gap:9px;padding:8px 10px;border-radius:8px;cursor:pointer;font-size:13px;color:var(--muted);transition:all .15s;margin-bottom:2px;border:1px solid transparent}
+.nav-item:hover{background:var(--sf2);color:var(--text)}
+.nav-item.active{background:rgba(58,91,217,.15);color:var(--bluell);border-color:rgba(58,91,217,.28)}
+.nav-badge{margin-left:auto;background:linear-gradient(135deg,var(--green),var(--blue));color:#fff;font-size:10px;font-weight:600;padding:1px 6px;border-radius:20px}
+.sidebar-footer{padding:14px;border-top:1px solid var(--br)}
+.channel-card{display:flex;align-items:center;gap:9px;padding:9px;background:var(--sf2);border-radius:10px;border:1px solid var(--br)}
+.channel-av{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--blue),var(--green));display:flex;align-items:center;justify-content:center;font-size:13px}
+.channel-name{font-size:12px;font-weight:600;color:var(--silver)}
+.channel-handle{font-size:10px;color:var(--muted)}
+.main{flex:1;display:flex;flex-direction:column;min-width:0}
+.topbar{background:var(--sf);border-bottom:1px solid var(--br);padding:0 24px;display:flex;align-items:center;justify-content:space-between;height:56px;position:sticky;top:0;z-index:10;position:relative}
+.topbar::after{content:'';position:absolute;bottom:0;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--blue),var(--green),transparent)}
+.topbar-title{font-family:'Raleway',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--silver)}
+.topbar-right{display:flex;gap:8px;align-items:center}
+.sync-status{font-size:10px;color:var(--muted);display:flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;border:1px solid var(--br);background:var(--sf2)}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--muted)}
+.sync-dot.ok{background:var(--green)}
+.sync-dot.saving{background:var(--warn);animation:pulse .8s infinite}
+.sync-dot.err{background:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:7px 16px;border-radius:8px;font-size:12px;font-family:'Golos Text',sans-serif;font-weight:600;cursor:pointer;border:none;transition:all .18s}
+.btn-primary{background:linear-gradient(135deg,var(--blue),#2a4bc0);color:#fff;box-shadow:0 2px 12px rgba(58,91,217,.3)}
+.btn-primary:hover{background:linear-gradient(135deg,var(--bluel),var(--blue));transform:translateY(-1px)}
+.btn-ghost{background:transparent;color:var(--muted);border:1px solid var(--br)}
+.btn-ghost:hover{background:var(--sf2);color:var(--text)}
+.btn-success{background:rgba(77,184,122,.12);color:var(--green);border:1px solid rgba(77,184,122,.3)}
+.btn-sm{padding:4px 10px;font-size:11px}
+.view-tabs{display:flex;gap:2px;background:var(--sf2);border-radius:8px;padding:3px;border:1px solid var(--br)}
+.vtab{padding:4px 12px;font-size:11px;border-radius:6px;cursor:pointer;color:var(--muted);transition:all .15s;font-family:'Golos Text',sans-serif;border:none;background:none}
+.vtab.active{background:var(--sf);color:var(--silver);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.content{padding:20px 24px;flex:1}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
+.stat-card{background:var(--sf);border:1px solid var(--br);border-radius:12px;padding:14px 16px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s}
+.stat-card:hover{transform:translateY(-2px);border-color:rgba(58,91,217,.4)}
+.stat-card::before{content:'';position:absolute;top:0;left:0;width:3px;height:100%}
+.stat-card:nth-child(1)::before{background:linear-gradient(180deg,var(--blue),var(--bluel))}
+.stat-card:nth-child(2)::before{background:linear-gradient(180deg,var(--green),var(--greenl))}
+.stat-card:nth-child(3)::before{background:linear-gradient(180deg,var(--bluel),var(--green))}
+.stat-card:nth-child(4)::before{background:linear-gradient(180deg,var(--silverd),var(--silver))}
+.stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:5px}
+.stat-value{font-family:'Raleway',sans-serif;font-size:24px;font-weight:600;color:var(--silver)}
+.stat-sub{font-size:10px;color:var(--muted);margin-top:3px}
+.two-col{display:grid;grid-template-columns:1fr 300px;gap:14px}
+.panel{background:var(--sf);border:1px solid var(--br);border-radius:14px;overflow:hidden}
+.panel-head{padding:12px 16px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.panel-title{font-family:'Raleway',sans-serif;font-size:11px;font-weight:600;letter-spacing:.5px;color:var(--silverd);text-transform:uppercase}
+.filters{display:flex;gap:6px;padding:10px 16px;border-bottom:1px solid var(--br);flex-wrap:wrap}
+.chip{padding:3px 11px;border-radius:20px;font-size:11px;cursor:pointer;border:1px solid var(--br);background:transparent;color:var(--muted);font-family:'Golos Text',sans-serif;transition:all .15s}
+.chip:hover,.chip.active{background:rgba(58,91,217,.15);color:var(--bluell);border-color:rgba(58,91,217,.4)}
+.post-list{max-height:420px;overflow-y:auto}
+.post-list::-webkit-scrollbar{width:3px}
+.post-list::-webkit-scrollbar-thumb{background:var(--br2);border-radius:4px}
+.post-row{display:grid;grid-template-columns:1fr auto auto auto auto;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--br);cursor:pointer;transition:background .12s}
+.post-row:hover{background:var(--sf2)}
+.post-row:last-child{border-bottom:none}
+.post-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text)}
+.post-meta{font-size:11px;color:var(--muted);margin-top:2px}
+.tag{display:inline-block;padding:2px 8px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:.2px;white-space:nowrap}
+.tag-case{background:rgba(90,126,245,.12);color:var(--bluell)}
+.tag-expert{background:rgba(110,233,160,.1);color:var(--greenl)}
+.tag-news{background:rgba(200,212,232,.08);color:var(--silverd)}
+.tag-tips{background:rgba(77,184,122,.1);color:var(--green)}
+.tag-product{background:rgba(232,169,58,.1);color:var(--warn)}
+.tag-idea{background:rgba(90,110,148,.1);color:var(--muted)}
+.tag-draft{background:rgba(232,169,58,.1);color:var(--warn)}
+.tag-review{background:rgba(58,91,217,.12);color:var(--bluell)}
+.tag-scheduled{background:rgba(110,233,160,.1);color:var(--greenl)}
+.tag-published{background:rgba(77,184,122,.1);color:var(--green)}
+.icon-btn{width:26px;height:26px;border-radius:6px;border:1px solid var(--br);background:transparent;cursor:pointer;color:var(--muted);display:flex;align-items:center;justify-content:center;font-size:13px;transition:all .15s}
+.icon-btn:hover{background:var(--sf2);color:var(--text);border-color:rgba(58,91,217,.5)}
+.empty-state{text-align:center;padding:40px 20px;color:var(--muted)}
+.empty-state .big{font-size:32px;margin-bottom:10px}
+.empty-state .etitle{font-size:14px;font-weight:500;color:var(--silverd);margin-bottom:5px}
+.right-col{display:flex;flex-direction:column;gap:12px}
+.cal-nav-row{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border-bottom:1px solid var(--br)}
+.cal-month-lbl{font-family:'Raleway',sans-serif;font-size:11px;font-weight:600;color:var(--silver);letter-spacing:.3px}
+.cal-btn{background:none;border:none;color:var(--muted);cursor:pointer;font-size:16px;padding:2px 7px;border-radius:5px;line-height:1}
+.cal-btn:hover{background:var(--sf2);color:var(--text)}
+.cal-body{padding:10px 12px}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
+.cal-dn{text-align:center;font-size:9px;color:var(--muted);padding:4px 0;text-transform:uppercase;letter-spacing:.5px}
+.cal-d{text-align:center;font-size:11px;padding:5px 2px;border-radius:6px;color:var(--muted);position:relative;transition:all .12s}
+.cal-d.clickable{cursor:pointer}
+.cal-d.clickable:hover{background:var(--sf2);color:var(--text)}
+.cal-d.today{background:rgba(58,91,217,.2);color:var(--bluell);font-weight:700}
+.cal-d.has-post{font-weight:600;color:var(--silver)}
+.cal-d.selected{outline:2px solid var(--blue);outline-offset:1px}
+.cal-dot{position:absolute;bottom:1px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%}
+.cal-hint{text-align:center;padding:8px;font-size:11px;color:var(--muted)}
+.cal-day-detail{padding:10px 12px;border-top:1px solid var(--br)}
+.cal-day-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.cal-post-item{display:flex;align-items:flex-start;gap:8px;padding:7px 9px;background:var(--sf2);border-radius:8px;margin-bottom:5px;cursor:pointer;border:1px solid var(--br);transition:border-color .12s}
+.cal-post-item:hover{border-color:var(--blue)}
+.cal-post-title{font-size:12px;font-weight:500;line-height:1.3;color:var(--text)}
+.cal-post-badges{display:flex;gap:4px;margin-top:3px;align-items:center;flex-wrap:wrap}
+.cal-post-time{font-size:10px;color:var(--muted)}
+.idea-row{display:flex;align-items:flex-start;gap:9px;padding:9px 14px;border-bottom:1px solid var(--br);cursor:pointer;transition:background .12s}
+.idea-row:hover{background:var(--sf2)}
+.idea-row:last-child{border-bottom:none}
+.idea-text{font-size:12px;font-weight:500;flex:1;line-height:1.4;color:var(--text)}
+.idea-cat{font-size:10px;color:var(--muted)}
+.add-idea{display:flex;gap:6px;padding:10px 12px;border-top:1px solid var(--br)}
+.add-idea input{flex:1;background:var(--sf2);border:1px solid var(--br);border-radius:7px;padding:6px 10px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:12px;outline:none}
+.add-idea input:focus{border-color:var(--blue)}
+.add-idea input::placeholder{color:var(--muted)}
+.modal-overlay{display:none;position:fixed;inset:0;background:rgba(5,8,18,.75);backdrop-filter:blur(6px);z-index:200;align-items:center;justify-content:center}
+.modal-overlay.open{display:flex}
+.modal{background:var(--sf);border:1px solid var(--br2);border-radius:16px;width:580px;max-width:96vw;max-height:92vh;overflow-y:auto;animation:modalIn .22s ease;box-shadow:0 24px 60px rgba(0,0,0,.6);border-top:2px solid var(--blue)}
+@keyframes modalIn{from{transform:translateY(24px);opacity:0}to{transform:translateY(0);opacity:1}}
+.modal-head{padding:18px 20px 14px;border-bottom:1px solid var(--br);display:flex;align-items:center;justify-content:space-between}
+.modal-title{font-family:'Raleway',sans-serif;font-size:13px;font-weight:600;letter-spacing:.3px;color:var(--silver)}
+.modal-close{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;line-height:1}
+.modal-close:hover{color:var(--text)}
+.modal-body{padding:18px 20px}
+.f-group{margin-bottom:14px}
+.f-label{font-size:10px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.7px;margin-bottom:5px;display:block}
+.f-input,.f-textarea,.f-select{width:100%;background:var(--sf2);border:1px solid var(--br);border-radius:8px;padding:8px 11px;color:var(--text);font-family:'Golos Text',sans-serif;font-size:13px;outline:none;transition:border-color .15s}
+.f-input:focus,.f-textarea:focus,.f-select:focus{border-color:var(--blue)}
+.f-textarea{resize:vertical;min-height:100px;line-height:1.6}
+.f-select option{background:var(--sf2);color:var(--text)}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.tg-preview{background:#111827;border-radius:11px;padding:12px;border:1px solid rgba(58,91,217,.2);margin-top:12px}
+.tg-preview-lbl{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:8px}
+.tg-bubble{background:#17212b;border-radius:3px 10px 10px 10px;padding:9px 11px;font-size:12px;line-height:1.6;color:#dce6f5;white-space:pre-wrap;word-break:break-word;max-height:130px;overflow-y:auto}
+.tg-time{text-align:right;font-size:10px;color:var(--muted);margin-top:4px}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--br);display:flex;gap:8px;justify-content:flex-end}
+.pipeline{display:flex;gap:10px;padding:14px;overflow-x:auto;min-height:280px}
+.pipe-col{flex:0 0 180px}
+.pipe-head{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;color:var(--muted);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between}
+.pipe-count{background:var(--sf2);border-radius:20px;padding:1px 6px;font-size:9px;border:1px solid var(--br)}
+.pipe-card{background:var(--sf2);border:1px solid var(--br);border-radius:9px;padding:9px 11px;cursor:pointer;transition:all .15s;margin-bottom:7px}
+.pipe-card:hover{border-color:rgba(58,91,217,.5);transform:translateY(-1px)}
+.pipe-card-title{font-size:12px;font-weight:500;line-height:1.35;margin-bottom:6px;color:var(--text)}
+.pipe-card-foot{display:flex;justify-content:space-between;align-items:center}
+.pipe-card-date{font-size:10px;color:var(--muted)}
+.pipe-adv{margin-top:7px;width:100%;font-size:10px;padding:3px 0;border-radius:5px;border:1px solid var(--br);background:transparent;cursor:pointer;color:var(--muted);font-family:'Golos Text',sans-serif;transition:all .12s}
+.pipe-adv:hover{background:rgba(77,184,122,.1);color:var(--green);border-color:rgba(77,184,122,.3)}
+.rubrics-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:14px}
+.rubric-card{background:var(--sf2);border:1px solid var(--br);border-radius:10px;padding:14px;text-align:center;transition:border-color .15s}
+.rubric-card:hover{border-color:rgba(58,91,217,.4)}
+.rubric-emoji{font-size:24px;margin-bottom:7px}
+.rubric-name{font-size:12px;font-weight:600;margin-bottom:3px;color:var(--silver)}
+.rubric-cnt{font-size:11px;color:var(--muted);margin-bottom:8px}
+.rubric-bar{height:2px;background:var(--br);border-radius:2px;overflow:hidden}
+.rubric-fill{height:100%;border-radius:2px}
+.check-section{padding:14px 16px;border-bottom:1px solid var(--br)}
+.check-section:last-child{border-bottom:none}
+.check-section-title{font-size:12px;font-weight:600;color:var(--silver);margin-bottom:10px}
+.check-item{display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid rgba(255,255,255,.02)}
+.check-item:last-child{border-bottom:none}
+.check-box{width:15px;height:15px;border-radius:4px;border:1.5px solid var(--br2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .15s}
+.check-box.done{background:var(--green);border-color:var(--green);color:#fff}
+.check-label{font-size:12px;flex:1;color:var(--text)}
+.check-label.done{text-decoration:line-through;color:var(--muted)}
+.anl-rub-row{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--br)}
+.anl-rub-row:last-child{border-bottom:none}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--sf2);border:1px solid var(--br2);border-radius:10px;padding:10px 16px;font-size:12px;z-index:999;display:flex;align-items:center;gap:8px;transform:translateY(60px);opacity:0;transition:all .3s cubic-bezier(.16,1,.3,1);box-shadow:0 8px 32px rgba(0,0,0,.5);pointer-events:none}
+.toast.show{transform:translateY(0);opacity:1}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-thumb{background:var(--br2);border-radius:4px}
+@media(max-width:1100px){.two-col{grid-template-columns:1fr}.stats-row{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:720px){.sidebar{display:none}.rubrics-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-row">
+        <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <circle cx="14" cy="14" r="13" stroke="rgba(200,212,232,0.2)" stroke-width="0.8"/>
+          <line x1="3" y1="3" x2="25" y2="25" stroke="url(#a1)" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="2.5" y1="4.5" x2="24.5" y2="26.5" stroke="url(#a2)" stroke-width="1" stroke-linecap="round"/>
+          <line x1="25" y1="3" x2="3" y2="25" stroke="url(#a3)" stroke-width="2.2" stroke-linecap="round"/>
+          <line x1="25.5" y1="4.5" x2="3.5" y2="26.5" stroke="url(#a4)" stroke-width="1" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="a1" x1="3" y1="3" x2="25" y2="25" gradientUnits="userSpaceOnUse"><stop stop-color="#3a5bd9"/><stop offset="1" stop-color="#4db87a"/></linearGradient>
+            <linearGradient id="a2" x1="2.5" y1="4.5" x2="24.5" y2="26.5" gradientUnits="userSpaceOnUse"><stop stop-color="#6ee9a0"/><stop offset="1" stop-color="#3a5bd9"/></linearGradient>
+            <linearGradient id="a3" x1="25" y1="3" x2="3" y2="25" gradientUnits="userSpaceOnUse"><stop stop-color="#c8d4e8"/><stop offset="1" stop-color="#3a5bd9"/></linearGradient>
+            <linearGradient id="a4" x1="25.5" y1="4.5" x2="3.5" y2="26.5" gradientUnits="userSpaceOnUse"><stop stop-color="#4db87a"/><stop offset="1" stop-color="#c8d4e8"/></linearGradient>
+          </defs>
+        </svg>
+        <div class="logo-name">Straterra<span>X</span></div>
+      </div>
+      <div class="logo-sub">Маркетплейсы · TG</div>
+    </div>
+    <nav class="nav">
+      <div class="nav-label">Рабочее место</div>
+      <div class="nav-item active" onclick="navTo('board',this)">📋 Контент-план</div>
+      <div class="nav-item" onclick="navTo('ideas',this)">💡 Идеи <span class="nav-badge" id="idea-badge">0</span></div>
+      <div class="nav-item" onclick="navTo('rubrics',this)">🗂 Рубрики</div>
+      <div class="nav-label">Публикации</div>
+      <div class="nav-item" onclick="navTo('pipeline',this)">🔄 Воронка постов</div>
+      <div class="nav-label">Аналитика</div>
+      <div class="nav-item" onclick="navTo('analytics',this)">📈 Статистика</div>
+      <div class="nav-item" onclick="navTo('checklist',this)">✅ Чеклисты</div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="channel-card">
+        <div class="channel-av">🛒</div>
+        <div><div class="channel-name">MP Growth Hub</div><div class="channel-handle">@mpgrowth</div></div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="main">
+    <div class="topbar">
+      <span class="topbar-title" id="page-title">Контент-план</span>
+      <div class="topbar-right">
+        <div class="sync-status" id="sync-status">
+          <span class="sync-dot" id="sync-dot"></span>
+          <span id="sync-text">загрузка...</span>
+        </div>
+        <div class="view-tabs" id="view-tabs" style="display:none">
+          <button class="vtab active" onclick="setView('table',this)">Таблица</button>
+          <button class="vtab" onclick="setView('kanban',this)">Канбан</button>
+        </div>
+        <button class="btn btn-primary" onclick="openModal(null)">✦ Новый пост</button>
+      </div>
+    </div>
+    <div class="content" id="content">
+      <div class="empty-state"><div class="big">⏳</div><div class="etitle">Загружаем данные...</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-overlay" onclick="overlayClick(event)">
+  <div class="modal">
+    <div class="modal-head">
+      <span class="modal-title" id="modal-title">Новый пост</span>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="f-row">
+        <div class="f-group"><label class="f-label">Название / Тема</label><input class="f-input" id="f-title" placeholder="О чём пост?" oninput="updatePreview()"></div>
+        <div class="f-group"><label class="f-label">Рубрика</label>
+          <select class="f-select" id="f-rubric">
+            <option value="case">📊 Кейс</option>
+            <option value="expert">🎓 Экспертность</option>
+            <option value="news">📣 Новости</option>
+            <option value="tips">💡 Советы</option>
+            <option value="product">🛒 Продукт</option>
+          </select>
+        </div>
+      </div>
+      <div class="f-group"><label class="f-label">Текст поста</label><textarea class="f-textarea" id="f-text" placeholder="Введите текст поста..." oninput="updatePreview()"></textarea></div>
+      <div class="f-row">
+        <div class="f-group"><label class="f-label">Статус</label>
+          <select class="f-select" id="f-status">
+            <option value="idea">💭 Идея</option>
+            <option value="draft" selected>✏️ Черновик</option>
+            <option value="review">🔍 На проверке</option>
+            <option value="scheduled">⏰ Запланирован</option>
+            <option value="published">✅ Опубликован</option>
+          </select>
+        </div>
+        <div class="f-group"><label class="f-label">Дата публикации</label><input class="f-input" id="f-date" type="datetime-local"></div>
+      </div>
+      <div class="f-group"><label class="f-label">Хэштеги</label><input class="f-input" id="f-tags" placeholder="#маркетплейс #wildberries #ozon"></div>
+      <div class="tg-preview">
+        <div class="tg-preview-lbl">✦ Превью в Telegram</div>
+        <div class="tg-bubble" id="tg-preview-text">Начните вводить текст поста...</div>
+        <div class="tg-time">сегодня ✓✓</div>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-ghost btn-sm" onclick="saveDraft()">💾 Черновик</button>
+      <button class="btn btn-primary" onclick="savePost()">✓ Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const BIN_ID = '6a0b35cd6877513b27918601';
+const API_KEY = '$2a$10$7e.ptSWRqRIAxrRCpUYtm.H5SVQUWi.cTlSKLQdmuK4Baaaf/H2z6';
+const BIN_URL = `https://api.jsonbin.io/v3/b/${BIN_ID}`;
+
+const RUBRICS={case:{label:'Кейс',emoji:'📊',color:'#5a7ef5'},expert:{label:'Экспертность',emoji:'🎓',color:'#6ee9a0'},news:{label:'Новости',emoji:'📣',color:'#8aaaf8'},tips:{label:'Советы',emoji:'💡',color:'#4db87a'},product:{label:'Продукт',emoji:'🛒',color:'#e8a93a'}};
+const STATUSES={idea:{label:'Идея',cls:'tag-idea'},draft:{label:'Черновик',cls:'tag-draft'},review:{label:'На проверке',cls:'tag-review'},scheduled:{label:'Запланирован',cls:'tag-scheduled'},published:{label:'Опубликован',cls:'tag-published'}};
+const FLOW=['idea','draft','review','scheduled','published'];
+
+const S={page:'board',view:'table',filter:'all',posts:[],ideas:[],nextId:1,editingId:null,calYear:new Date().getFullYear(),calMonth:new Date().getMonth(),calSel:null,checks:{}};
+
+function setSyncStatus(state){
+  const dot=document.getElementById('sync-dot');
+  const txt=document.getElementById('sync-text');
+  if(state==='ok'){dot.className='sync-dot ok';txt.textContent='сохранено';}
+  else if(state==='saving'){dot.className='sync-dot saving';txt.textContent='сохранение...';}
+  else if(state==='loading'){dot.className='sync-dot';txt.textContent='загрузка...';}
+  else if(state==='err'){dot.className='sync-dot err';txt.textContent='ошибка связи';}
+}
+
+async function loadData(){
+  setSyncStatus('loading');
+  try{
+    const res=await fetch(BIN_URL+'/latest',{headers:{'X-Master-Key':API_KEY,'X-Bin-Meta':false}});
+    if(!res.ok)throw new Error();
+    const data=await res.json();
+    S.posts=data.posts||[];
+    S.ideas=data.ideas||[];
+    S.nextId=data.nextId||1;
+    S.checks=data.checks||{};
+    setSyncStatus('ok');
+  }catch(e){
+    setSyncStatus('err');
+    toast('⚠️ Не удалось загрузить данные');
+  }
+  render();
+}
+
+let saveTimer=null;
+function scheduleSave(){
+  setSyncStatus('saving');
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(()=>doSave(),800);
+}
+
+async function doSave(){
+  try{
+    const res=await fetch(BIN_URL,{
+      method:'PUT',
+      headers:{'Content-Type':'application/json','X-Master-Key':API_KEY},
+      body:JSON.stringify({posts:S.posts,ideas:S.ideas,nextId:S.nextId,checks:S.checks})
+    });
+    if(!res.ok)throw new Error();
+    setSyncStatus('ok');
+  }catch(e){
+    setSyncStatus('err');
+    toast('⚠️ Ошибка сохранения');
+  }
+}
+
+function navTo(page,el){
+  S.page=page;
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const titles={board:'Контент-план',ideas:'Идеи и темы',rubrics:'Рубрики',pipeline:'Воронка постов',analytics:'Статистика',checklist:'Чеклисты'};
+  document.getElementById('page-title').textContent=titles[page]||page;
+  document.getElementById('view-tabs').style.display=page==='board'?'':'none';
+  render();
+}
+function setView(v,el){S.view=v;document.querySelectorAll('.vtab').forEach(b=>b.classList.remove('active'));if(el)el.classList.add('active');render();}
+function render(){
+  document.getElementById('idea-badge').textContent=S.ideas.length;
+  const c=document.getElementById('content');
+  if(S.page==='board')c.innerHTML=renderBoard();
+  else if(S.page==='ideas')c.innerHTML=renderIdeasPage();
+  else if(S.page==='rubrics')c.innerHTML=renderRubricsPage();
+  else if(S.page==='pipeline')c.innerHTML=renderPipelinePage();
+  else if(S.page==='analytics')c.innerHTML=renderAnalyticsPage();
+  else if(S.page==='checklist')c.innerHTML=renderChecklistPage();
+}
+
+function renderBoard(){
+  const pub=S.posts.filter(p=>p.status==='published'),sch=S.posts.filter(p=>p.status==='scheduled'),dr=S.posts.filter(p=>p.status==='draft'||p.status==='review');
+  const stats=`<div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Всего постов</div><div class="stat-value">${S.posts.length}</div><div class="stat-sub">в базе</div></div>
+    <div class="stat-card"><div class="stat-label">Опубликовано</div><div class="stat-value">${pub.length}</div><div class="stat-sub">${pub.length?'записей':'пока нет'}</div></div>
+    <div class="stat-card"><div class="stat-label">Запланировано</div><div class="stat-value">${sch.length}</div><div class="stat-sub">${sch.length?'постов':'пока нет'}</div></div>
+    <div class="stat-card"><div class="stat-label">Черновики</div><div class="stat-value">${dr.length}</div><div class="stat-sub">${dr.length?'в работе':'пока нет'}</div></div>
+  </div>`;
+  if(S.view==='kanban')return stats+renderKanban();
+  const flt=S.filter==='all'?S.posts:S.posts.filter(p=>p.status===S.filter);
+  const chips=['all','idea','draft','review','scheduled','published'].map(s=>{
+    const lbs={all:'Все',idea:'Идеи',draft:'Черновики',review:'На проверке',scheduled:'Запланировано',published:'Опубликовано'};
+    return `<button class="chip${s===S.filter?' active':''}" onclick="S.filter='${s}';render()">${lbs[s]}</button>`;
+  }).join('');
+  const rows=flt.length===0
+    ?`<div class="empty-state"><div class="big">📭</div><div class="etitle">Постов пока нет</div><div>Нажмите «Новый пост» чтобы начать</div></div>`
+    :flt.map(p=>{
+      const rm=RUBRICS[p.rubric]||{},sm=STATUSES[p.status]||{};
+      const ds=p.date?p.date.slice(0,10).split('-').reverse().slice(0,2).join('.'):'—';
+      return `<div class="post-row" onclick="openModal(${p.id})">
+        <div><div class="post-title">${rm.emoji||''} ${p.title}</div><div class="post-meta">${p.tags||'теги не добавлены'}</div></div>
+        <span class="tag tag-${p.rubric}">${rm.label||p.rubric}</span>
+        <span class="tag ${sm.cls}">${sm.label||p.status}</span>
+        <span style="font-size:11px;color:var(--muted);white-space:nowrap">${ds}</span>
+        <div style="display:flex;gap:4px">
+          <button class="icon-btn" onclick="event.stopPropagation();openModal(${p.id})">✏️</button>
+          <button class="icon-btn" onclick="event.stopPropagation();deletePost(${p.id})">🗑️</button>
+        </div>
+      </div>`;
+    }).join('');
+  return stats+`<div class="two-col">
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Посты</span><span style="font-size:10px;color:var(--muted)">${flt.length} записей</span></div>
+      <div class="filters">${chips}</div>
+      <div class="post-list">${rows}</div>
+    </div>
+    ${renderSideWidgets()}
+  </div>`;
+}
+
+function renderSideWidgets(){
+  const now=new Date(),y=S.calYear,m=S.calMonth;
+  const MN=['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+  const fd=new Date(y,m,1).getDay(),dim=new Date(y,m+1,0).getDate();
+  const pbd={};
+  S.posts.forEach(p=>{
+    if(!p.date)return;
+    const d=new Date(p.date);
+    if(d.getFullYear()===y&&d.getMonth()===m){const day=d.getDate();if(!pbd[day])pbd[day]=[];pbd[day].push(p);}
+  });
+  const DN=['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  let cells=DN.map(d=>`<div class="cal-dn">${d}</div>`).join('');
+  const off=(fd+6)%7;
+  for(let i=0;i<off;i++)cells+='<div></div>';
+  for(let d=1;d<=dim;d++){
+    const isToday=d===now.getDate()&&m===now.getMonth()&&y===now.getFullYear();
+    const ps=pbd[d]||[],hp=ps.length>0,isSel=S.calSel===d;
+    const dc=hp?(RUBRICS[ps[0].rubric]||{color:'#4db87a'}).color:'';
+    cells+=`<div class="cal-d${isToday?' today':''}${hp?' has-post':''}${hp?' clickable':''}${isSel?' selected':''}"${hp?` onclick="calSelectDay(${d})"`:''}>
+      ${d}${hp?`<span class="cal-dot" style="background:${dc}"></span>`:''}
+    </div>`;
+  }
+  const calHint=S.posts.filter(p=>p.date).length===0?`<div class="cal-hint">Назначьте дату посту — он появится здесь</div>`:'';
+  let dayDetail='';
+  if(S.calSel!==null&&pbd[S.calSel]){
+    const ps=pbd[S.calSel];
+    const items=ps.map(p=>{
+      const rm=RUBRICS[p.rubric]||{},sm=STATUSES[p.status]||{},time=p.date&&p.date.length>10?p.date.slice(11,16):'';
+      return `<div class="cal-post-item" onclick="openModal(${p.id})">
+        <span style="font-size:18px">${rm.emoji||'📝'}</span>
+        <div style="flex:1;min-width:0">
+          <div class="cal-post-title">${p.title}</div>
+          <div class="cal-post-badges">
+            <span class="tag tag-${p.rubric}" style="font-size:9px">${rm.label||p.rubric}</span>
+            <span class="tag ${sm.cls}" style="font-size:9px">${sm.label||p.status}</span>
+            ${time?`<span class="cal-post-time">⏱ ${time}</span>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+    dayDetail=`<div class="cal-day-detail"><div class="cal-day-label">${S.calSel} ${MN[m]} — ${ps.length} ${ps.length===1?'пост':'поста'}</div>${items}</div>`;
+  }
+  const ideaRows=S.ideas.slice(0,5).map(i=>{const rm=RUBRICS[i.cat]||{};return `<div class="idea-row" onclick="convertIdea(${i.id})"><span style="font-size:15px">${rm.emoji||'💡'}</span><div><div class="idea-text">${i.text}</div><div class="idea-cat">${rm.label||i.cat}</div></div></div>`;}).join('');
+  const ideasHtml=S.ideas.length===0?`<div class="empty-state" style="padding:16px"><div>Идей пока нет</div></div>`:ideaRows;
+  return `<div class="right-col">
+    <div class="panel">
+      <div class="cal-nav-row">
+        <button class="cal-btn" onclick="calNav(-1)">&#8249;</button>
+        <span class="cal-month-lbl">${MN[m]} ${y}</span>
+        <button class="cal-btn" onclick="calNav(1)">&#8250;</button>
+      </div>
+      <div class="cal-body"><div class="cal-grid">${cells}</div>${calHint}</div>
+      ${dayDetail}
+    </div>
+    <div class="panel">
+      <div class="panel-head"><span class="panel-title">Идеи</span><button class="btn btn-ghost btn-sm" onclick="navToIdeas()">Все →</button></div>
+      ${ideasHtml}
+      <div class="add-idea">
+        <input id="quick-idea-input" placeholder="Быстрая идея..." onkeydown="if(event.key==='Enter')addQuickIdea()">
+        <button class="btn btn-primary btn-sm" onclick="addQuickIdea()">+</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderKanban(){
+  const stL={idea:'💭 Идеи',draft:'✏️ Черновики',review:'🔍 Проверка',scheduled:'⏰ Запланировано',published:'✅ Опубликовано'};
+  const cols=FLOW.map(st=>{
+    const ps=S.posts.filter(p=>p.status===st);
+    const cards=ps.length===0?`<div style="font-size:11px;color:var(--muted);text-align:center;padding:14px">Нет постов</div>`:ps.map(p=>{
+      const rm=RUBRICS[p.rubric]||{},ds=p.date?p.date.slice(0,10).split('-').reverse().slice(0,2).join('.'):'—',nxt=FLOW[FLOW.indexOf(st)+1];
+      return `<div class="pipe-card" onclick="openModal(${p.id})">
+        <div class="pipe-card-title">${rm.emoji||''} ${p.title}</div>
+        <div class="pipe-card-foot"><span class="tag tag-${p.rubric}" style="font-size:9px">${rm.label||p.rubric}</span><span class="pipe-card-date">${ds}</span></div>
+        ${nxt?`<button class="pipe-adv" onclick="event.stopPropagation();advancePost(${p.id})">→ ${STATUSES[nxt].label}</button>`:''}
+      </div>`;
+    }).join('');
+    return `<div class="pipe-col"><div class="pipe-head">${stL[st]}<span class="pipe-count">${ps.length}</span></div>${cards}</div>`;
+  }).join('');
+  return `<div class="panel"><div class="pipeline">${cols}</div></div>`;
+}
+
+function renderIdeasPage(){
+  const rows=S.ideas.length===0?`<div class="empty-state"><div class="big">💡</div><div class="etitle">Банк идей пуст</div><div>Добавьте первую идею ниже</div></div>`:S.ideas.map(i=>{
+    const rm=RUBRICS[i.cat]||{};
+    return `<div class="post-row" style="grid-template-columns:1fr auto auto">
+      <div><div class="post-title">${rm.emoji||'💡'} ${i.text}</div><div class="post-meta">${rm.label||i.cat}</div></div>
+      <span class="tag tag-${i.cat}">${rm.label||i.cat}</span>
+      <div style="display:flex;gap:5px">
+        <button class="btn btn-success btn-sm" onclick="convertIdea(${i.id})">→ В пост</button>
+        <button class="icon-btn" onclick="deleteIdea(${i.id})">🗑️</button>
+      </div>
+    </div>`;
+  }).join('');
+  const opts=Object.entries(RUBRICS).map(([k,v])=>`<option value="${k}">${v.emoji} ${v.label}</option>`).join('');
+  return `<div class="panel" style="max-width:680px">
+    <div class="panel-head"><span class="panel-title">Банк идей (${S.ideas.length})</span></div>
+    <div class="post-list">${rows}</div>
+    <div style="display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--br)">
+      <input class="f-input" id="new-idea-text" placeholder="Новая идея..." style="flex:1">
+      <select class="f-select" id="new-idea-cat" style="width:160px">${opts}</select>
+      <button class="btn btn-primary" onclick="addIdea()">+ Добавить</button>
+    </div>
+  </div>`;
+}
+
+function renderRubricsPage(){
+  const total=S.posts.length;
+  const cards=Object.entries(RUBRICS).map(([k,rm])=>{
+    const cnt=S.posts.filter(p=>p.rubric===k).length,pct=total>0?Math.round(cnt/total*100):0;
+    return `<div class="rubric-card"><div class="rubric-emoji">${rm.emoji}</div><div class="rubric-name">${rm.label}</div><div class="rubric-cnt">${cnt} постов · ${pct}%</div><div class="rubric-bar"><div class="rubric-fill" style="width:${pct}%;background:${rm.color}"></div></div></div>`;
+  }).join('');
+  return `<div class="panel"><div class="panel-head"><span class="panel-title">Рубрики канала</span></div><div class="rubrics-grid">${cards}</div></div>`;
+}
+
+function renderPipelinePage(){
+  const stL={idea:'💭 Идеи',draft:'✏️ Черновики',review:'🔍 Проверка',scheduled:'⏰ Запланировано',published:'✅ Опубликовано'};
+  const cols=FLOW.map(st=>{
+    const ps=S.posts.filter(p=>p.status===st);
+    const cards=ps.length===0?`<div style="font-size:11px;color:var(--muted);text-align:center;padding:14px">Нет постов</div>`:ps.map(p=>{
+      const rm=RUBRICS[p.rubric]||{},ds=p.date?p.date.slice(0,10).split('-').reverse().slice(0,2).join('.'):'—',nxt=FLOW[FLOW.indexOf(st)+1];
+      return `<div class="pipe-card" onclick="openModal(${p.id})">
+        <div class="pipe-card-title">${rm.emoji||''} ${p.title}</div>
+        <div class="pipe-card-foot"><span class="tag tag-${p.rubric}" style="font-size:9px">${rm.label||p.rubric}</span><span class="pipe-card-date">${ds}</span></div>
+        ${nxt?`<button class="pipe-adv" onclick="event.stopPropagation();advancePost(${p.id})">→ ${STATUSES[nxt].label}</button>`:''}
+      </div>`;
+    }).join('');
+    return `<div class="pipe-col"><div class="pipe-head">${stL[st]}<span class="pipe-count">${ps.length}</span></div>${cards}</div>`;
+  }).join('');
+  return `<div class="panel"><div class="pipeline">${cols}</div></div>`;
+}
+
+function renderAnalyticsPage(){
+  const pub=S.posts.filter(p=>p.status==='published'),tv=pub.reduce((s,p)=>s+(p.views||0),0),avg=pub.length?Math.round(tv/pub.length):0;
+  const top=[...pub].sort((a,b)=>(b.views||0)-(a.views||0))[0];
+  const fv=v=>v>=1000?(v/1000).toFixed(1)+'K':String(v);
+  const rubRows=Object.entries(RUBRICS).map(([k,rm])=>{
+    const ps=pub.filter(p=>p.rubric===k),v=ps.reduce((s,p)=>s+(p.views||0),0);
+    return `<div class="anl-rub-row"><span style="font-size:20px">${rm.emoji}</span><div style="flex:1"><div style="font-size:13px;font-weight:500;color:var(--text)">${rm.label}</div><div style="font-size:11px;color:var(--muted)">${ps.length} постов</div></div><div style="text-align:right"><div style="font-family:'Raleway',sans-serif;font-size:14px;font-weight:600;color:var(--silver)">${v>0?fv(v):'0'}</div><div style="font-size:10px;color:var(--muted)">просмотров</div></div></div>`;
+  }).join('');
+  const topRows=pub.length===0?`<div class="empty-state" style="padding:24px"><div>Нет опубликованных постов</div></div>`:[...pub].sort((a,b)=>(b.views||0)-(a.views||0)).slice(0,5).map((p,i)=>`
+    <div class="post-row" style="grid-template-columns:20px 1fr auto" onclick="openModal(${p.id})">
+      <span style="font-family:'Raleway',sans-serif;font-size:13px;color:var(--muted)">${i+1}</span>
+      <div class="post-title">${p.title}</div>
+      <span style="font-size:12px;color:var(--green)">👁 ${(p.views||0)>0?fv(p.views):'0'}</span>
+    </div>`).join('');
+  return `<div class="stats-row">
+    <div class="stat-card"><div class="stat-label">Опубликовано</div><div class="stat-value">${pub.length}</div></div>
+    <div class="stat-card"><div class="stat-label">Просмотров всего</div><div class="stat-value">${tv>0?fv(tv):'0'}</div></div>
+    <div class="stat-card"><div class="stat-label">Среднее на пост</div><div class="stat-value">${avg>0?fv(avg):'0'}</div></div>
+    <div class="stat-card"><div class="stat-label">Лучший охват</div><div class="stat-value">${top&&top.views>0?fv(top.views):'—'}</div></div>
+  </div>
+  <div class="two-col">
+    <div class="panel"><div class="panel-head"><span class="panel-title">Топ постов</span></div><div class="post-list">${topRows}</div></div>
+    <div class="panel"><div class="panel-head"><span class="panel-title">По рубрикам</span></div>${rubRows}</div>
+  </div>`;
+}
+
+function renderChecklistPage(){
+  const CL=[
+    {title:'✅ Чеклист нового поста',items:['Определена целевая аудитория','Прописан оффер / польза','Добавлены эмодзи и форматирование','Проверена орфография и стиль','Добавлены хэштеги','Прикреплено изображение или видео','Пост согласован','Назначена дата публикации']},
+    {title:'🚀 Запуск канала',items:['Настроен профиль канала','Загружена аватарка','Прописано описание канала','Создан закреплённый пост-знакомство','Настроены реакции','Добавлены ссылки в описание','Первые 10 постов готовы','Настроен автопостинг']},
+    {title:'📦 Пост про маркетплейс',items:['Указана конкретная проблема','Есть цифры или статистика','Проверена актуальность данных','Добавлен призыв к действию','Нет дублирования предыдущего контента']},
+  ];
+  return `<div class="panel" style="max-width:640px">${CL.map((cl,ci)=>{
+    const items=cl.items.map((item,i)=>{const key=`${ci}_${i}`,done=!!S.checks[key];
+      return `<div class="check-item"><div class="check-box${done?' done':''}" id="cb-${key}" onclick="toggleCheck('${key}')">${done?'✓':''}</div><span class="check-label${done?' done':''}" id="cl-${key}">${item}</span></div>`;
+    }).join('');
+    return `<div class="check-section"><div class="check-section-title">${cl.title}</div>${items}</div>`;
+  }).join('')}</div>`;
+}
+
+function calNav(dir){S.calMonth+=dir;if(S.calMonth>11){S.calMonth=0;S.calYear++;}if(S.calMonth<0){S.calMonth=11;S.calYear--;}S.calSel=null;render();}
+function calSelectDay(d){S.calSel=S.calSel===d?null:d;render();}
+function navToIdeas(){const el=document.querySelectorAll('.nav-item')[1];navTo('ideas',el);}
+
+function openModal(id){
+  const post=id?S.posts.find(p=>p.id===id):null;
+  S.editingId=id||null;
+  document.getElementById('modal-title').textContent=post?'Редактировать пост':'Новый пост';
+  document.getElementById('f-title').value=post?post.title:'';
+  document.getElementById('f-text').value=post?(post.text||''):'';
+  document.getElementById('f-rubric').value=post?post.rubric:'case';
+  document.getElementById('f-status').value=post?post.status:'draft';
+  document.getElementById('f-date').value=post?(post.date||''):'';
+  document.getElementById('f-tags').value=post?(post.tags||''):'';
+  updatePreview();
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal(){document.getElementById('modal-overlay').classList.remove('open');}
+function overlayClick(e){if(e.target===document.getElementById('modal-overlay'))closeModal();}
+function updatePreview(){
+  const text=document.getElementById('f-text').value,tags=document.getElementById('f-tags').value;
+  document.getElementById('tg-preview-text').textContent=(text||'Начните вводить текст...')+(tags?'\n\n'+tags:'');
+}
+function savePost(){
+  const title=document.getElementById('f-title').value.trim();
+  if(!title){toast('⚠️ Укажите название поста');return;}
+  const data={id:S.editingId||S.nextId++,title,text:document.getElementById('f-text').value,rubric:document.getElementById('f-rubric').value,status:document.getElementById('f-status').value,date:document.getElementById('f-date').value,tags:document.getElementById('f-tags').value,views:0};
+  if(S.editingId){const idx=S.posts.findIndex(p=>p.id===S.editingId);if(idx>=0){data.views=S.posts[idx].views;S.posts[idx]=data;}}
+  else S.posts.unshift(data);
+  closeModal();S.calSel=null;scheduleSave();render();toast('✅ Пост сохранён');
+}
+function saveDraft(){document.getElementById('f-status').value='draft';savePost();}
+function deletePost(id){if(!confirm('Удалить пост?'))return;S.posts=S.posts.filter(p=>p.id!==id);scheduleSave();render();toast('🗑️ Удалено');}
+function advancePost(id){const p=S.posts.find(p=>p.id===id);if(!p)return;const i=FLOW.indexOf(p.status);if(i<FLOW.length-1){p.status=FLOW[i+1];scheduleSave();render();toast('↗️ Статус обновлён');}}
+function convertIdea(id){
+  const idea=S.ideas.find(i=>i.id===id);if(!idea)return;
+  S.editingId=null;openModal(null);
+  setTimeout(()=>{document.getElementById('f-title').value=idea.text;document.getElementById('f-rubric').value=idea.cat;updatePreview();},30);
+}
+function addQuickIdea(){const inp=document.getElementById('quick-idea-input');if(!inp||!inp.value.trim())return;S.ideas.unshift({id:Date.now(),text:inp.value.trim(),cat:'tips'});inp.value='';scheduleSave();render();toast('💡 Идея добавлена');}
+function addIdea(){const t=(document.getElementById('new-idea-text')||{}).value?.trim(),c=(document.getElementById('new-idea-cat')||{}).value||'tips';if(!t)return;S.ideas.unshift({id:Date.now(),text:t,cat:c});scheduleSave();render();toast('💡 Идея добавлена');}
+function deleteIdea(id){S.ideas=S.ideas.filter(i=>i.id!==id);scheduleSave();render();}
+function toggleCheck(key){S.checks[key]=!S.checks[key];const box=document.getElementById('cb-'+key),lbl=document.getElementById('cl-'+key);if(box){box.classList.toggle('done',S.checks[key]);box.textContent=S.checks[key]?'✓':'';}if(lbl)lbl.classList.toggle('done',S.checks[key]);scheduleSave();}
+function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2600);}
+
+loadData();
+</script>
+</body>
+</html>
